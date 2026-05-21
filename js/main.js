@@ -80,111 +80,67 @@ function onScroll() {
 window.addEventListener('scroll', onScroll, { passive: true });
 onScroll();
 
-/* ── Service Card Mouse Glow ── */
-document.querySelectorAll('.service-card').forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        card.style.setProperty('--mouse-x', x + '%');
-        card.style.setProperty('--mouse-y', y + '%');
-    });
-
-    const glowColors = {
-        cyan: 'rgba(34,211,238,0.15)',
-        purple: 'rgba(168,85,247,0.15)',
-        blue: 'rgba(59,130,246,0.15)',
-        amber: 'rgba(245,158,11,0.15)',
-    };
-    const glow = glowColors[card.dataset.glow] || glowColors.cyan;
-    card.addEventListener('mouseenter', () => {
-        card.style.boxShadow = `0 20px 60px ${glow}, 0 0 0 1px rgba(255,255,255,0.1)`;
-    });
-    card.addEventListener('mouseleave', () => {
-        card.style.boxShadow = '';
-    });
-});
-
 /* ── Testimonial Slider ── */
-const slides = document.querySelectorAll('.testimonial-slide');
-const dots = document.querySelectorAll('.dot');
 let currentSlide = 0;
 let slideInterval;
 
-function showSlide(index) {
-    slides.forEach((slide, i) => {
-        slide.classList.toggle('active-slide', i === index);
-        slide.classList.toggle('hidden-slide', i !== index);
-    });
-    dots.forEach((dot, i) => {
-        dot.classList.toggle('bg-cyan-400', i === index);
-        dot.classList.toggle('bg-white/20', i !== index);
-        dot.classList.toggle('w-6', i === index);
-        dot.classList.toggle('w-2.5', i !== index);
-    });
-    currentSlide = index;
-}
+function initTestimonials() {
+    const slides = document.querySelectorAll('.testimonial-slide');
+    const dots = document.querySelectorAll('.dot');
+    if (!slides.length) return;
 
-function nextSlide() {
-    showSlide((currentSlide + 1) % slides.length);
-}
-
-function prevSlide() {
-    showSlide((currentSlide - 1 + slides.length) % slides.length);
-}
-
-document.getElementById('next-testimonial').addEventListener('click', () => {
-    nextSlide();
-    resetInterval();
-});
-document.getElementById('prev-testimonial').addEventListener('click', () => {
-    prevSlide();
-    resetInterval();
-});
-dots.forEach(dot => {
-    dot.addEventListener('click', () => {
-        showSlide(parseInt(dot.dataset.index));
-        resetInterval();
-    });
-});
-
-function resetInterval() {
     clearInterval(slideInterval);
+    currentSlide = 0;
+
+    function showSlide(index) {
+        slides.forEach((slide, i) => {
+            slide.classList.toggle('active-slide', i === index);
+            slide.classList.toggle('hidden-slide', i !== index);
+        });
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('bg-cyan-400', i === index);
+            dot.classList.toggle('bg-white/20', i !== index);
+            dot.classList.toggle('w-6', i === index);
+            dot.classList.toggle('w-2.5', i !== index);
+        });
+        currentSlide = index;
+    }
+
+    function nextSlide() {
+        showSlide((currentSlide + 1) % slides.length);
+    }
+
+    function prevSlide() {
+        showSlide((currentSlide - 1 + slides.length) % slides.length);
+    }
+
+    function resetInterval() {
+        clearInterval(slideInterval);
+        slideInterval = setInterval(nextSlide, 5000);
+    }
+
+    const nextBtn = document.getElementById('next-testimonial');
+    const prevBtn = document.getElementById('prev-testimonial');
+    if (nextBtn) {
+        nextBtn.replaceWith(nextBtn.cloneNode(true));
+        document.getElementById('next-testimonial').addEventListener('click', () => { nextSlide(); resetInterval(); });
+    }
+    if (prevBtn) {
+        prevBtn.replaceWith(prevBtn.cloneNode(true));
+        document.getElementById('prev-testimonial').addEventListener('click', () => { prevSlide(); resetInterval(); });
+    }
+    dots.forEach(dot => {
+        dot.onclick = () => { showSlide(parseInt(dot.dataset.index, 10)); resetInterval(); };
+    });
+
+    showSlide(0);
     slideInterval = setInterval(nextSlide, 5000);
 }
-slideInterval = setInterval(nextSlide, 5000);
 
-/* ── Portfolio Filter ── */
-const filterBtns = document.querySelectorAll('.filter-btn');
-const portfolioItems = document.querySelectorAll('.portfolio-card');
+window.reinitTestimonials = initTestimonials;
+initTestimonials();
 
-filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        filterBtns.forEach(b => {
-            b.classList.remove('active', 'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/30');
-            b.classList.add('text-slate-400', 'border-white/10');
-        });
-        btn.classList.add('active', 'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/30');
-        btn.classList.remove('text-slate-400', 'border-white/10');
-
-        const filter = btn.dataset.filter;
-        portfolioItems.forEach(item => {
-            const match = filter === 'all' || item.dataset.category === filter;
-            item.style.display = match ? '' : 'none';
-            if (match) {
-                item.style.opacity = '0';
-                item.style.transform = 'scale(0.95)';
-                requestAnimationFrame(() => {
-                    item.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-                    item.style.opacity = '1';
-                    item.style.transform = 'scale(1)';
-                });
-            }
-        });
-    });
-});
-
-/* ── Portfolio Video Play ── */
+/* ── Portfolio Filter & Video ── */
 function isVideoFullscreen() {
     return !!(document.fullscreenElement || document.webkitFullscreenElement);
 }
@@ -208,20 +164,12 @@ async function openPortfolioVideo(card, video) {
     card.classList.add('is-playing');
 
     try {
-        if (video.requestFullscreen) {
-            await video.requestFullscreen();
-        } else if (video.webkitEnterFullscreen) {
-            video.webkitEnterFullscreen();
-            await video.play();
-            return;
-        } else if (video.webkitRequestFullscreen) {
-            await video.webkitRequestFullscreen();
-        }
+        if (video.requestFullscreen) await video.requestFullscreen();
+        else if (video.webkitEnterFullscreen) { video.webkitEnterFullscreen(); await video.play(); return; }
+        else if (video.webkitRequestFullscreen) await video.webkitRequestFullscreen();
         await video.play();
     } catch {
-        try {
-            await video.play();
-        } catch { /* user gesture required */ }
+        try { await video.play(); } catch { /* user gesture required */ }
     }
 }
 
@@ -232,34 +180,67 @@ function resetPortfolioVideo(video) {
     video.closest('.portfolio-card--video')?.classList.remove('is-playing');
 }
 
-document.querySelectorAll('.portfolio-card--video').forEach(card => {
-    const video = card.querySelector('video');
-    if (!video) return;
+function initPortfolio() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
 
-    card.addEventListener('click', () => {
-        if (isVideoFullscreen() && document.fullscreenElement === video) {
-            exitVideoFullscreen();
-            return;
-        }
-        if (video.paused) openPortfolioVideo(card, video);
-        else {
-            video.pause();
-            card.classList.remove('is-playing');
-        }
+    filterBtns.forEach(btn => {
+        btn.onclick = () => {
+            filterBtns.forEach(b => {
+                b.classList.remove('active', 'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/30');
+                b.classList.add('text-slate-400', 'border-white/10');
+            });
+            btn.classList.add('active', 'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/30');
+            btn.classList.remove('text-slate-400', 'border-white/10');
+
+            const filter = btn.dataset.filter;
+            document.querySelectorAll('.portfolio-card').forEach(item => {
+                const match = filter === 'all' || item.dataset.category === filter;
+                item.style.display = match ? '' : 'none';
+                if (match) {
+                    item.style.opacity = '0';
+                    item.style.transform = 'scale(0.95)';
+                    requestAnimationFrame(() => {
+                        item.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                        item.style.opacity = '1';
+                        item.style.transform = 'scale(1)';
+                    });
+                }
+            });
+        };
     });
 
-    video.addEventListener('ended', () => {
-        resetPortfolioVideo(video);
-        if (isVideoFullscreen()) exitVideoFullscreen();
-    });
-});
+    document.querySelectorAll('.portfolio-card--video').forEach(card => {
+        const video = card.querySelector('video');
+        if (!video) return;
 
-['fullscreenchange', 'webkitfullscreenchange'].forEach(evt => {
-    document.addEventListener(evt, () => {
-        if (isVideoFullscreen()) return;
-        document.querySelectorAll('.portfolio-card--video video').forEach(resetPortfolioVideo);
+        card.onclick = () => {
+            if (isVideoFullscreen() && document.fullscreenElement === video) {
+                exitVideoFullscreen();
+                return;
+            }
+            if (video.paused) openPortfolioVideo(card, video);
+            else { video.pause(); card.classList.remove('is-playing'); }
+        };
+
+        video.onended = () => {
+            resetPortfolioVideo(video);
+            if (isVideoFullscreen()) exitVideoFullscreen();
+        };
     });
-});
+}
+
+window.reinitPortfolio = initPortfolio;
+initPortfolio();
+
+if (!window._zeusFullscreenBound) {
+    window._zeusFullscreenBound = true;
+    ['fullscreenchange', 'webkitfullscreenchange'].forEach(evt => {
+        document.addEventListener(evt, () => {
+            if (isVideoFullscreen()) return;
+            document.querySelectorAll('.portfolio-card--video video').forEach(resetPortfolioVideo);
+        });
+    });
+}
 
 /* ── Newsletter Form ── */
 document.getElementById('newsletter-form').addEventListener('submit', (e) => {

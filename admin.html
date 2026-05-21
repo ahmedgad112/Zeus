@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم | Zeus Agency</title>
+    <script src="js/tailwind.config.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <style>* { font-family: 'Cairo', sans-serif; }</style>
+</head>
+<body class="admin-body text-slate-100 antialiased">
+
+    <!-- Login -->
+    <div id="login-screen" class="admin-login">
+        <div class="w-full max-w-md glass rounded-2xl p-8 border border-white/10" style="background:rgba(255,255,255,0.04);backdrop-filter:blur(16px)">
+            <div class="text-center mb-8">
+                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-bolt text-black text-xl"></i>
+                </div>
+                <h1 class="text-2xl font-black text-white">لوحة تحكم زيوس</h1>
+                <p class="text-slate-500 text-sm mt-2">أدخل كلمة المرور للوصول</p>
+            </div>
+            <form id="login-form">
+                <label class="admin-label" for="login-password">كلمة المرور</label>
+                <input type="password" id="login-password" class="admin-input mb-4" required autocomplete="current-password" placeholder="كلمة المرور الافتراضية: zeus2026">
+                <p id="login-error" class="text-red-400 text-sm mb-3 hidden">كلمة المرور غير صحيحة</p>
+                <button type="submit" class="admin-btn admin-btn--primary w-full py-3">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    دخول
+                </button>
+            </form>
+            <a href="index.html" class="block text-center text-slate-500 text-sm mt-6 hover:text-cyan-400 transition">← العودة للموقع</a>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="hidden">
+        <button id="sidebar-toggle" type="button" class="lg:hidden fixed top-4 right-4 z-[60] w-11 h-11 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center" aria-label="القائمة">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <aside id="admin-sidebar" class="admin-sidebar">
+            <div class="flex items-center gap-3 mb-8 pb-6 border-b border-white/10">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center">
+                    <i class="fa-solid fa-bolt text-black text-sm"></i>
+                </div>
+                <div>
+                    <p class="font-black text-white">Zeus Admin</p>
+                    <p class="text-[10px] text-slate-500">إدارة المحتوى</p>
+                </div>
+            </div>
+
+            <nav class="flex flex-col gap-1 flex-1" id="admin-nav">
+                <button type="button" class="admin-nav-btn is-active" data-panel="portfolio"><i class="fa-solid fa-images w-5"></i> معرض الأعمال</button>
+                <button type="button" class="admin-nav-btn" data-panel="hero"><i class="fa-solid fa-house w-5"></i> الصفحة الرئيسية</button>
+                <button type="button" class="admin-nav-btn" data-panel="about"><i class="fa-solid fa-users w-5"></i> من نحن</button>
+                <button type="button" class="admin-nav-btn" data-panel="services"><i class="fa-solid fa-briefcase w-5"></i> الخدمات</button>
+                <button type="button" class="admin-nav-btn" data-panel="process"><i class="fa-solid fa-route w-5"></i> آلية العمل</button>
+                <button type="button" class="admin-nav-btn" data-panel="testimonials"><i class="fa-solid fa-quote-right w-5"></i> آراء العملاء</button>
+                <button type="button" class="admin-nav-btn" data-panel="contact"><i class="fa-solid fa-envelope w-5"></i> التواصل والفوتر</button>
+                <button type="button" class="admin-nav-btn" data-panel="settings"><i class="fa-solid fa-gear w-5"></i> الإعدادات</button>
+            </nav>
+
+            <div class="mt-auto pt-6 border-t border-white/10 space-y-2">
+                <a href="index.html" target="_blank" class="admin-btn admin-btn--ghost w-full text-sm">
+                    <i class="fa-solid fa-external-link"></i> معاينة الموقع
+                </a>
+                <button type="button" id="btn-logout" class="admin-btn admin-btn--danger w-full text-sm">
+                    <i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج
+                </button>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <header class="flex flex-wrap items-center justify-between gap-4 mb-8">
+                <div>
+                    <h2 id="panel-title" class="text-2xl font-black text-white">معرض الأعمال</h2>
+                    <p class="text-slate-500 text-sm">التعديلات تُحفظ في المتصفح وتظهر فوراً على الموقع</p>
+                </div>
+                <button type="button" id="btn-save-all" class="admin-btn admin-btn--primary">
+                    <i class="fa-solid fa-floppy-disk"></i> حفظ الكل
+                </button>
+            </header>
+
+            <!-- Portfolio -->
+            <section id="panel-portfolio" class="admin-panel is-active">
+                <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+                    <p class="text-slate-400 text-sm">إضافة، تعديل، أو حذف عناصر Portfolio</p>
+                    <button type="button" id="btn-add-portfolio" class="admin-btn admin-btn--primary">
+                        <i class="fa-solid fa-plus"></i> إضافة عمل جديد
+                    </button>
+                </div>
+                <div id="portfolio-list"></div>
+            </section>
+
+            <!-- Hero -->
+            <section id="panel-hero" class="admin-panel">
+                <div id="form-hero" class="space-y-4"></div>
+            </section>
+
+            <!-- About -->
+            <section id="panel-about" class="admin-panel">
+                <div id="form-about" class="space-y-4"></div>
+            </section>
+
+            <!-- Services -->
+            <section id="panel-services" class="admin-panel">
+                <div class="mb-4">
+                    <input type="text" class="admin-input mb-2" id="services-header-label" placeholder="عنوان القسم">
+                    <input type="text" class="admin-input mb-2" id="services-header-title" placeholder="العنوان الرئيسي">
+                    <input type="text" class="admin-input" id="services-header-subtitle" placeholder="الوصف">
+                </div>
+                <div id="services-list"></div>
+                <button type="button" id="btn-add-service" class="admin-btn admin-btn--ghost mt-4"><i class="fa-solid fa-plus"></i> خدمة جديدة</button>
+            </section>
+
+            <!-- Process -->
+            <section id="panel-process" class="admin-panel">
+                <div id="form-process" class="space-y-4"></div>
+            </section>
+
+            <!-- Testimonials -->
+            <section id="panel-testimonials" class="admin-panel">
+                <div id="testimonials-list"></div>
+                <button type="button" id="btn-add-testimonial" class="admin-btn admin-btn--ghost mt-4"><i class="fa-solid fa-plus"></i> رأي جديد</button>
+            </section>
+
+            <!-- Contact -->
+            <section id="panel-contact" class="admin-panel">
+                <div id="form-contact" class="space-y-4"></div>
+            </section>
+
+            <!-- Settings -->
+            <section id="panel-settings" class="admin-panel">
+                <div class="admin-card">
+                    <h3 class="font-bold text-white mb-4">كلمة المرور</h3>
+                    <label class="admin-label">كلمة مرور جديدة</label>
+                    <input type="password" id="new-password" class="admin-input mb-3">
+                    <button type="button" id="btn-change-password" class="admin-btn admin-btn--primary">تغيير كلمة المرور</button>
+                </div>
+                <div class="admin-card">
+                    <h3 class="font-bold text-white mb-4">نسخ احتياطي</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <button type="button" id="btn-export" class="admin-btn admin-btn--ghost"><i class="fa-solid fa-download"></i> تصدير JSON</button>
+                        <label class="admin-btn admin-btn--ghost cursor-pointer">
+                            <i class="fa-solid fa-upload"></i> استيراد JSON
+                            <input type="file" id="import-file" accept=".json" class="hidden">
+                        </label>
+                        <button type="button" id="btn-reset" class="admin-btn admin-btn--danger"><i class="fa-solid fa-rotate-left"></i> استعادة الافتراضي</button>
+                    </div>
+                </div>
+                <div class="admin-card">
+                    <h3 class="font-bold text-white mb-2">SEO</h3>
+                    <label class="admin-label">عنوان الصفحة</label>
+                    <input type="text" id="meta-title" class="admin-input mb-3">
+                    <label class="admin-label">وصف الميتا</label>
+                    <textarea id="meta-description" class="admin-textarea"></textarea>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Portfolio Modal -->
+    <div id="portfolio-modal" class="admin-modal" aria-hidden="true">
+        <div class="admin-modal__box">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="portfolio-modal-title" class="text-lg font-bold text-white">إضافة عمل</h3>
+                <button type="button" id="portfolio-modal-close" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="portfolio-form" class="space-y-4">
+                <input type="hidden" id="pf-id">
+                <div class="admin-grid-2">
+                    <div>
+                        <label class="admin-label">التصنيف</label>
+                        <select id="pf-category" class="admin-select">
+                            <option value="video">إنتاج فيديو</option>
+                            <option value="design">تصميم جرافيك</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="admin-label">نوع الوسائط</label>
+                        <select id="pf-mediaType" class="admin-select">
+                            <option value="image">صورة</option>
+                            <option value="video">فيديو</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="admin-label">التاغ (إنجليزي)</label>
+                    <input type="text" id="pf-tag" class="admin-input" required placeholder="Video Production">
+                </div>
+                <div>
+                    <label class="admin-label">لون التاغ</label>
+                    <select id="pf-tagClass" class="admin-select"></select>
+                </div>
+                <div>
+                    <label class="admin-label">العنوان</label>
+                    <input type="text" id="pf-title" class="admin-input" required>
+                </div>
+                <div>
+                    <label class="admin-label">رابط الملف (مثال: image/1.jpg)</label>
+                    <input type="text" id="pf-src" class="admin-input" placeholder="image/1.jpg أو image/v.mp4">
+                </div>
+                <div>
+                    <label class="admin-label">أو رفع ملف من الجهاز</label>
+                    <input type="file" id="pf-file" accept="image/*,video/*" class="admin-input">
+                    <p class="text-xs text-slate-500 mt-1">الملفات الكبيرة قد لا تُخزّن في المتصفح — يُفضّل رفعها لمجلد image ثم إدخال المسار</p>
+                </div>
+                <div>
+                    <label class="admin-label">نص بديل (alt)</label>
+                    <input type="text" id="pf-alt" class="admin-input">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="admin-btn admin-btn--primary flex-1">حفظ</button>
+                    <button type="button" id="portfolio-modal-cancel" class="admin-btn admin-btn--ghost">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="admin-toast">تم الحفظ بنجاح</div>
+
+    <script src="js/content-store.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
