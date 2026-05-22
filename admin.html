@@ -9,50 +9,63 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/admin.css">
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem('zeus_admin_theme') || 'light';
+                document.documentElement.setAttribute('data-theme', t);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
     <style>* { font-family: 'Cairo', sans-serif; }</style>
 </head>
-<body class="admin-body text-slate-100 antialiased">
+<body class="admin-body antialiased">
+
+    <button type="button" id="theme-toggle-login" class="admin-theme-fab" aria-label="تبديل الوضع">
+        <i class="fa-solid fa-moon"></i>
+    </button>
 
     <!-- Login -->
     <div id="login-screen" class="admin-login">
-        <div class="w-full max-w-md glass rounded-2xl p-8 border border-white/10" style="background:rgba(255,255,255,0.04);backdrop-filter:blur(16px)">
+        <div class="admin-login-card">
             <div class="text-center mb-8">
                 <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center mx-auto mb-4">
                     <i class="fa-solid fa-bolt text-black text-xl"></i>
                 </div>
-                <h1 class="text-2xl font-black text-white">لوحة تحكم زيوس</h1>
-                <p class="text-slate-500 text-sm mt-2">أدخل اسم المستخدم وكلمة المرور</p>
+                <h1 class="text-2xl admin-title">لوحة تحكم زيوس</h1>
+                <p class="admin-muted text-sm mt-2">أدخل اسم المستخدم وكلمة المرور</p>
             </div>
             <form id="login-form">
                 <label class="admin-label" for="login-username">اسم المستخدم</label>
                 <input type="text" id="login-username" class="admin-input mb-3" required autocomplete="username" placeholder="admin" value="admin">
                 <label class="admin-label" for="login-password">كلمة المرور</label>
                 <input type="password" id="login-password" class="admin-input mb-4" required autocomplete="current-password">
-                <p id="login-error" class="text-red-400 text-sm mb-3 hidden">بيانات الدخول غير صحيحة</p>
+                <p id="login-error" class="admin-error text-sm mb-3 hidden">بيانات الدخول غير صحيحة</p>
                 <button type="submit" class="admin-btn admin-btn--primary w-full py-3">
                     <i class="fa-solid fa-right-to-bracket"></i>
                     دخول
                 </button>
             </form>
-            <p class="text-center text-[11px] text-slate-600 mt-4">افتراضي: admin / zeus2026</p>
-            <a href="index.html" class="block text-center text-slate-500 text-sm mt-6 hover:text-cyan-400 transition">← العودة للموقع</a>
+            <a href="index.html" class="block text-center admin-muted text-sm mt-6 hover:text-cyan-500 transition">← العودة للموقع</a>
         </div>
     </div>
 
     <!-- Dashboard -->
     <div id="dashboard" class="hidden">
-        <button id="sidebar-toggle" type="button" class="lg:hidden fixed top-4 right-4 z-[60] w-11 h-11 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center" aria-label="القائمة">
+        <button id="sidebar-toggle" type="button" class="admin-mobile-toggle lg:hidden fixed top-4 right-4 z-[60] w-11 h-11 rounded-xl flex items-center justify-center" aria-label="القائمة">
             <i class="fa-solid fa-bars"></i>
         </button>
 
         <aside id="admin-sidebar" class="admin-sidebar">
-            <div class="flex items-center gap-3 mb-8 pb-6 border-b border-white/10">
+            <div class="flex items-center gap-3 mb-8 pb-6 border-b admin-divider">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center">
                     <i class="fa-solid fa-bolt text-black text-sm"></i>
                 </div>
                 <div>
-                    <p class="font-black text-white">Zeus Admin</p>
-                    <p class="text-[10px] text-slate-500">إدارة المحتوى</p>
+                    <p class="font-black admin-title">Zeus Admin</p>
+                    <p class="text-[10px] admin-faint">إدارة المحتوى</p>
                 </div>
             </div>
 
@@ -67,9 +80,13 @@
                 <button type="button" class="admin-nav-btn admin-only hidden" data-panel="users"><i class="fa-solid fa-user-shield w-5"></i> المستخدمين</button>
                 <button type="button" class="admin-nav-btn" data-panel="settings"><i class="fa-solid fa-gear w-5"></i> الإعدادات</button>
             </nav>
-            <p id="current-user-badge" class="text-xs text-slate-500 px-2 mb-2 hidden"></p>
+            <p id="current-user-badge" class="text-xs admin-faint px-2 mb-2 hidden"></p>
 
-            <div class="mt-auto pt-6 border-t border-white/10 space-y-2">
+            <div class="mt-auto pt-6 border-t admin-divider space-y-2">
+                <button type="button" id="theme-toggle" class="admin-btn admin-btn--theme w-full text-sm">
+                    <i class="fa-solid fa-moon"></i>
+                    <span id="theme-toggle-label">الوضع الداكن</span>
+                </button>
                 <a href="index.html" target="_blank" class="admin-btn admin-btn--ghost w-full text-sm">
                     <i class="fa-solid fa-external-link"></i> معاينة الموقع
                 </a>
@@ -82,18 +99,23 @@
         <main class="admin-main">
             <header class="flex flex-wrap items-center justify-between gap-4 mb-8">
                 <div>
-                    <h2 id="panel-title" class="text-2xl font-black text-white">معرض الأعمال</h2>
-                    <p class="text-slate-500 text-sm">التعديلات تُحفظ في المتصفح وتظهر فوراً على الموقع</p>
+                    <h2 id="panel-title" class="text-2xl admin-title">معرض الأعمال</h2>
+                    <p class="admin-muted text-sm">التعديلات تُحفظ في المتصفح وتظهر فوراً على الموقع</p>
                 </div>
-                <button type="button" id="btn-save-all" class="admin-btn admin-btn--primary">
-                    <i class="fa-solid fa-floppy-disk"></i> حفظ الكل
-                </button>
+                <div class="admin-header-actions">
+                    <button type="button" id="theme-toggle-header" class="admin-btn admin-btn--theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <button type="button" id="btn-save-all" class="admin-btn admin-btn--primary">
+                        <i class="fa-solid fa-floppy-disk"></i> حفظ الكل
+                    </button>
+                </div>
             </header>
 
             <!-- Portfolio -->
             <section id="panel-portfolio" class="admin-panel is-active">
                 <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
-                    <p class="text-slate-400 text-sm">إضافة، تعديل، أو حذف عناصر Portfolio</p>
+                    <p class="admin-muted text-sm">إضافة، تعديل، أو حذف عناصر Portfolio</p>
                     <button type="button" id="btn-add-portfolio" class="admin-btn admin-btn--primary">
                         <i class="fa-solid fa-plus"></i> إضافة عمل جديد
                     </button>
@@ -141,7 +163,7 @@
             <!-- Users -->
             <section id="panel-users" class="admin-panel">
                 <div class="admin-card mb-6">
-                    <h3 class="font-bold text-white mb-4">إضافة مستخدم</h3>
+                    <h3 class="admin-heading mb-4">إضافة مستخدم</h3>
                     <div class="admin-grid-2 mb-3">
                         <div>
                             <label class="admin-label">اسم المستخدم</label>
@@ -173,7 +195,7 @@
             <!-- Settings -->
             <section id="panel-settings" class="admin-panel">
                 <div class="admin-card">
-                    <h3 class="font-bold text-white mb-4">كلمة مروري</h3>
+                    <h3 class="admin-heading mb-4">كلمة مروري</h3>
                     <label class="admin-label">كلمة المرور الحالية</label>
                     <input type="password" id="current-password" class="admin-input mb-3" autocomplete="current-password">
                     <label class="admin-label">كلمة مرور جديدة</label>
@@ -181,7 +203,7 @@
                     <button type="button" id="btn-change-password" class="admin-btn admin-btn--primary">تغيير كلمة المرور</button>
                 </div>
                 <div class="admin-card">
-                    <h3 class="font-bold text-white mb-4">نسخ احتياطي</h3>
+                    <h3 class="admin-heading mb-4">نسخ احتياطي</h3>
                     <div class="flex flex-wrap gap-3">
                         <button type="button" id="btn-export" class="admin-btn admin-btn--ghost"><i class="fa-solid fa-download"></i> تصدير JSON</button>
                         <label class="admin-btn admin-btn--ghost cursor-pointer">
@@ -192,7 +214,7 @@
                     </div>
                 </div>
                 <div class="admin-card">
-                    <h3 class="font-bold text-white mb-2">SEO</h3>
+                    <h3 class="admin-heading mb-2">SEO</h3>
                     <label class="admin-label">عنوان الصفحة</label>
                     <input type="text" id="meta-title" class="admin-input mb-3">
                     <label class="admin-label">وصف الميتا</label>
@@ -206,8 +228,8 @@
     <div id="portfolio-modal" class="admin-modal" aria-hidden="true">
         <div class="admin-modal__box">
             <div class="flex justify-between items-center mb-6">
-                <h3 id="portfolio-modal-title" class="text-lg font-bold text-white">إضافة عمل</h3>
-                <button type="button" id="portfolio-modal-close" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <h3 id="portfolio-modal-title" class="text-lg admin-heading">إضافة عمل</h3>
+                <button type="button" id="portfolio-modal-close" class="admin-modal__close"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <form id="portfolio-form" class="space-y-4">
                 <input type="hidden" id="pf-id">
@@ -246,7 +268,7 @@
                 <div>
                     <label class="admin-label">أو رفع ملف من الجهاز</label>
                     <input type="file" id="pf-file" accept="image/*,video/*" class="admin-input">
-                    <p class="text-xs text-slate-500 mt-1">الملفات الكبيرة قد لا تُخزّن في المتصفح — يُفضّل رفعها لمجلد image ثم إدخال المسار</p>
+                    <p class="text-xs admin-faint mt-1">الملفات الكبيرة قد لا تُخزّن في المتصفح — يُفضّل رفعها لمجلد image ثم إدخال المسار</p>
                 </div>
                 <div>
                     <label class="admin-label">نص بديل (alt)</label>

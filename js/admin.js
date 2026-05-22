@@ -23,6 +23,37 @@
     const dashboard = document.getElementById('dashboard');
     const toast = document.getElementById('toast');
 
+    const THEME_KEY = 'zeus_admin_theme';
+
+    function getTheme() {
+        return document.documentElement.getAttribute('data-theme') || 'light';
+    }
+
+    function updateThemeIcons(theme) {
+        const isLight = theme === 'light';
+        const iconClass = isLight ? 'fa-moon' : 'fa-sun';
+        document.querySelectorAll('#theme-toggle i, #theme-toggle-header i, #theme-toggle-login i').forEach(el => {
+            el.className = 'fa-solid ' + iconClass;
+        });
+        const label = document.getElementById('theme-toggle-label');
+        if (label) label.textContent = isLight ? 'الوضع الداكن' : 'الوضع الفاتح';
+    }
+
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        try { localStorage.setItem(THEME_KEY, theme); } catch { /* ignore */ }
+        updateThemeIcons(theme);
+    }
+
+    function toggleTheme() {
+        setTheme(getTheme() === 'light' ? 'dark' : 'light');
+    }
+
+    ['theme-toggle', 'theme-toggle-header', 'theme-toggle-login'].forEach(id => {
+        document.getElementById(id)?.addEventListener('click', toggleTheme);
+    });
+    updateThemeIcons(getTheme());
+
     function showToast(msg) {
         toast.textContent = msg;
         toast.classList.add('show');
@@ -45,6 +76,7 @@
     function showApp() {
         loginScreen.classList.add('hidden');
         dashboard.classList.remove('hidden');
+        document.getElementById('theme-toggle-login')?.classList.add('hidden');
         applyRoleUI();
         renderAll();
         if (ContentStore.isAdmin()) renderUsers();
@@ -58,10 +90,10 @@
         list.innerHTML = users.map(u => {
             const isSelf = me && u.id === me.id;
             return `<div class="portfolio-admin-item">
-                <div class="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold">${(u.displayName || u.username).charAt(0)}</div>
+                <div class="user-avatar">${(u.displayName || u.username).charAt(0)}</div>
                 <div class="min-w-0">
-                    <p class="font-bold text-white">${u.displayName || u.username}</p>
-                    <p class="text-xs text-slate-500">@${u.username} · ${ROLE_LABELS[u.role]}</p>
+                    <p class="admin-item-title">${u.displayName || u.username}</p>
+                    <p class="admin-item-meta">@${u.username} · ${ROLE_LABELS[u.role]}</p>
                 </div>
                 <div class="flex gap-2 flex-shrink-0">
                     <button type="button" class="admin-btn admin-btn--ghost text-xs user-reset-pw" data-id="${u.id}"><i class="fa-solid fa-key"></i></button>
@@ -187,7 +219,7 @@
 
         const statsWrap = document.getElementById('about-stats-fields');
         statsWrap.innerHTML = a.stats.map((s, i) =>
-            `<div class="border border-white/5 rounded-lg p-3 mb-2 space-y-2" data-i="${i}">
+            `<div class="admin-sub-card mb-2 space-y-2" data-i="${i}">
                 <div class="admin-grid-2">
                     <input class="admin-input about-stat-icon" data-i="${i}" placeholder="أيقونة fa-users" value="${s.icon}">
                     <input class="admin-input about-stat-value" data-i="${i}" placeholder="القيمة" value="${s.value}">
@@ -335,7 +367,7 @@
             field('الوصف', 'contact-description', c.description, 'textarea') +
             field('واتساب', 'contact-whatsapp', c.whatsapp) +
             field('البريد', 'contact-email', c.email) +
-            '<hr class="border-white/10 my-6">' +
+            '<hr class="admin-hr my-6">' +
             field('وصف الفوتر', 'footer-description', f.description) +
             field('حقوق النشر', 'footer-copyright', f.copyright) +
             field('فيسبوك', 'social-facebook', f.social.facebook) +
@@ -357,7 +389,7 @@
         </div>`;
         const items = state.portfolio.items;
         if (!items.length) {
-            list.innerHTML = header + '<p class="text-slate-500 text-center py-12">لا توجد أعمال. اضغط «إضافة عمل جديد»</p>';
+            list.innerHTML = header + '<p class="admin-empty py-12">لا توجد أعمال. اضغط «إضافة عمل جديد»</p>';
             bindPortfolioHeader();
             return;
         }
@@ -369,8 +401,8 @@
             return `<div class="portfolio-admin-item" data-id="${item.id}">
                 ${thumb}
                 <div class="min-w-0">
-                    <p class="font-bold text-white truncate">${item.title}</p>
-                    <p class="text-xs text-slate-500">${item.tag} · ${catLabel}</p>
+                    <p class="admin-item-title truncate">${item.title}</p>
+                    <p class="admin-item-meta">${item.tag} · ${catLabel}</p>
                 </div>
                 <div class="flex gap-2 flex-shrink-0">
                     <button type="button" class="admin-btn admin-btn--ghost text-xs pf-edit" data-id="${item.id}"><i class="fa-solid fa-pen"></i></button>
@@ -547,27 +579,16 @@
                 showApp();
             } else {
                 const err = document.getElementById('login-error');
-                err.textContent = 'بيانات الدخول غير صحيحة — جرّب admin / zeus2026';
-                err.classList.remove('hidden');
+                err.textContent = 'بيانات الدخول غير صحيحة';
+                err.classList.remove('hidden', 'admin-success');
+                err.classList.add('admin-error');
             }
         } catch (err) {
             const el = document.getElementById('login-error');
             el.textContent = err.message || 'حدث خطأ أثناء الدخول';
-            el.classList.remove('hidden');
+            el.classList.remove('hidden', 'admin-success');
+            el.classList.add('admin-error');
         }
-    });
-
-    document.getElementById('btn-reset-login')?.addEventListener('click', () => {
-        if (!confirm('إعادة بيانات الدخول للافتراضي؟\nadmin / zeus2026')) return;
-        ContentStore.resetUsersToDefaults();
-        ContentStore.logout();
-        document.getElementById('login-password').value = '';
-        document.getElementById('login-username').value = 'admin';
-        const err = document.getElementById('login-error');
-        err.textContent = 'تمت الإعادة — سجّل الدخول بـ admin / zeus2026';
-        err.classList.remove('hidden');
-        err.classList.remove('text-red-400');
-        err.classList.add('text-emerald-400');
     });
 
     if (ContentStore.isLoggedIn()) showApp();
