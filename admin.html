@@ -12,7 +12,9 @@
     <script>
         (function () {
             try {
-                var t = localStorage.getItem('zeus_admin_theme') || 'light';
+                var t = localStorage.getItem('zeus_theme')
+                    || localStorage.getItem('zeus_admin_theme')
+                    || 'light';
                 document.documentElement.setAttribute('data-theme', t);
             } catch (e) {
                 document.documentElement.setAttribute('data-theme', 'light');

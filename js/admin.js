@@ -23,7 +23,7 @@
     const dashboard = document.getElementById('dashboard');
     const toast = document.getElementById('toast');
 
-    const THEME_KEY = 'zeus_admin_theme';
+    const THEME_KEY = 'zeus_theme';
 
     function getTheme() {
         return document.documentElement.getAttribute('data-theme') || 'light';
@@ -41,7 +41,10 @@
 
     function setTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
-        try { localStorage.setItem(THEME_KEY, theme); } catch { /* ignore */ }
+        try {
+            localStorage.setItem(THEME_KEY, theme);
+            localStorage.setItem('zeus_admin_theme', theme);
+        } catch { /* ignore */ }
         updateThemeIcons(theme);
     }
 

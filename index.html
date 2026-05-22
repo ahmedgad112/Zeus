@@ -12,8 +12,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem('zeus_theme')
+                    || localStorage.getItem('zeus_admin_theme')
+                    || 'light';
+                document.documentElement.setAttribute('data-theme', t);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
 </head>
-<body class="text-slate-100 overflow-x-hidden antialiased">
+<body class="site-body antialiased">
 
     <!-- Hero Background Image (fades on scroll) -->
     <div id="scroll-bg" class="hero-scroll-bg" aria-hidden="true">
@@ -23,13 +35,13 @@
 
     <!-- Ambient Background Orbs -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div class="absolute top-0 right-1/4 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[140px] animate-pulse-glow"></div>
-        <div class="absolute top-1/2 left-0 w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[120px] animate-pulse-glow" style="animation-delay: 2s;"></div>
-        <div class="absolute bottom-0 right-0 w-[350px] h-[350px] bg-blue-600/8 rounded-full blur-[100px]"></div>
+        <div class="absolute top-0 right-1/4 w-[500px] h-[500px] site-orb-cyan rounded-full blur-[140px] animate-pulse-glow"></div>
+        <div class="absolute top-1/2 left-0 w-[400px] h-[400px] site-orb-purple rounded-full blur-[120px] animate-pulse-glow" style="animation-delay: 2s;"></div>
+        <div class="absolute bottom-0 right-0 w-[350px] h-[350px] site-orb-blue rounded-full blur-[100px]"></div>
     </div>
 
     <!-- ═══════════════════ NAVBAR ═══════════════════ -->
-    <header id="navbar" class="navbar glass-nav border-b border-white/5">
+    <header id="navbar" class="navbar glass-nav">
         <div class="navbar__inner">
             <a href="#hero" class="navbar__brand group">
                 <div class="navbar__logo">
@@ -51,6 +63,10 @@
 
             <a href="#contact" class="navbar__cta hidden lg:inline-flex">ابدأ مشروعك</a>
 
+            <button type="button" id="theme-toggle" class="theme-toggle hidden lg:flex" aria-label="تبديل الوضع">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+
             <button id="menu-btn" type="button" class="navbar__toggle lg:hidden" aria-label="فتح القائمة" aria-expanded="false" aria-controls="mobile-menu">
                 <i class="fa-solid fa-bars text-lg"></i>
             </button>
@@ -64,18 +80,22 @@
             <a href="#process" class="mobile-link">آلية العمل</a>
             <a href="#portfolio" class="mobile-link">أعمالنا</a>
             <a href="#contact" class="mobile-link mobile-link--cta">ابدأ مشروعك</a>
+            <button type="button" id="theme-toggle-mobile" class="mobile-link theme-toggle-mobile">
+                <i class="fa-solid fa-moon ml-2"></i>
+                <span id="theme-toggle-label">الوضع الداكن</span>
+            </button>
         </nav>
     </header>
 
     <!-- ═══════════════════ HERO ═══════════════════ -->
     <section id="hero" class="hero-section relative flex items-center overflow-x-hidden">
-        <div class="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_40%,#000_60%,transparent_100%)] pointer-events-none"></div>
+        <div class="absolute inset-0 site-hero-grid pointer-events-none"></div>
 
         <div class="container mx-auto px-5 sm:px-6 relative z-10">
             <div class="max-w-3xl mx-auto">
                 <!-- Hero Copy -->
                 <div class="text-center">
-                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-xs font-semibold text-purple-300 mb-6 border border-white/10">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-xs font-semibold site-badge mb-6">
                         <span class="relative flex h-2 w-2">
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-400"></span>
@@ -83,15 +103,15 @@
                         <span id="hero-badge">وكالة تسويق رقمي &amp; إنتاج فيديو</span>
                     </div>
 
-                    <h3 class="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-black text-white leading-[1.15] mb-6">
+                    <h3 class="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-black site-title leading-[1.15] mb-6">
                         <span id="hero-title-1">لا تنتظر الفرصة..</span><br>
                         <span id="hero-title-highlight" class="bg-clip-text text-transparent bg-gradient-to-l from-cyan-400 via-blue-400 to-purple-500">
                             اصنع التأثير الطاغي
                         </span>
-                        <span id="hero-title-2" class="block text-3xl sm:text-4xl md:text-5xl mt-2 text-slate-300 font-bold">لعلامتك التجارية.</span>
+                        <span id="hero-title-2" class="block text-3xl sm:text-4xl md:text-5xl mt-2 site-muted-soft font-bold">لعلامتك التجارية.</span>
                     </h3>
 
-                    <p id="hero-description" class="text-base md:text-lg text-slate-400 max-w-xl mx-auto mb-8 leading-relaxed">
+                    <p id="hero-description" class="text-base md:text-lg site-muted max-w-xl mx-auto mb-8 leading-relaxed">
                         في <strong class="text-white">زيوس</strong>، ندمج الإبداع البصري مع الاستراتيجيات التسويقية الذكية — من إنتاج الفيديو وحتى بناء الهوية البصرية — لنحوّل فكرتك إلى براند يتحدث عنه الجميع.
                     </p>
 
@@ -100,26 +120,26 @@
                             <i class="fa-solid fa-play group-hover:scale-110 transition-transform"></i>
                             شاهد أعمالنا
                         </a>
-                        <a href="#contact" class="px-8 py-4 glass text-white font-bold rounded-2xl hover:bg-white/8 border border-white/10 transition-all duration-300 hover:-translate-y-1 flex items-center justify-center gap-2">
+                        <a href="#contact" class="px-8 py-4 glass site-btn-ghost font-bold rounded-2xl transition-all duration-300 hover:-translate-y-1 flex items-center justify-center gap-2">
                             <i class="fa-solid fa-comments text-cyan-400"></i>
                             استشارة مجانية
                         </a>
                     </div>
 
                     <!-- Trust Stats -->
-                    <div id="hero-stats" class="flex flex-wrap justify-center gap-8 mt-12 pt-8 border-t border-white/5"></div>
+                    <div id="hero-stats" class="flex flex-wrap justify-center gap-8 mt-12 pt-8 border-t site-divider"></div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- ═══════════════════ ABOUT ═══════════════════ -->
-    <section id="about" class="py-16 md:py-24 relative border-y border-white/5 bg-slate-950/50">
+    <section id="about" class="py-16 md:py-24 relative site-section-alt">
         <div class="container mx-auto px-5 sm:px-6">
             <div class="grid lg:grid-cols-2 gap-14 items-center">
                 <div>
                     <span id="about-label" class="inline-block text-cyan-400 font-bold text-sm mb-3 tracking-wide">من نحن</span>
-                    <h2 id="about-title" class="text-3xl md:text-5xl font-extrabold text-white mb-6 leading-tight">
+                    <h2 id="about-title" class="text-3xl md:text-5xl font-extrabold site-title mb-6 leading-tight">
                         الإبداع ليس مجرد فكرة،<br>
                         <span class="bg-clip-text text-transparent bg-gradient-to-l from-cyan-400 to-purple-400">بل القوة التي تحرك الأسواق</span>
                     </h2>
@@ -130,11 +150,11 @@
 
                 <div class="relative">
                     <div class="absolute -inset-4 bg-gradient-to-tr from-cyan-500/20 to-purple-500/20 rounded-3xl blur-2xl"></div>
-                    <div class="relative glass rounded-3xl p-8 sm:p-10 border border-white/10">
+                    <div class="relative glass rounded-3xl p-8 sm:p-10 site-border border">
                         <div id="about-stats" class="grid grid-cols-2 gap-4 mb-8"></div>
                         <blockquote class="text-center">
-                            <p id="about-philosophy-title" class="text-lg font-bold text-white mb-2">فلسفتنا ببساطة:</p>
-                            <p id="about-philosophy-text" class="text-slate-400 text-sm">استراتيجية ذكية + إبداع بصري = تأثير طاغٍ لا يُتجاهل</p>
+                            <p id="about-philosophy-title" class="text-lg font-bold site-title mb-2">فلسفتنا ببساطة:</p>
+                            <p id="about-philosophy-text" class="site-muted text-sm">استراتيجية ذكية + إبداع بصري = تأثير طاغٍ لا يُتجاهل</p>
                         </blockquote>
                     </div>
                 </div>
@@ -147,8 +167,8 @@
         <div class="container mx-auto px-5 sm:px-6">
             <div class="text-center max-w-2xl mx-auto mb-16">
                 <span id="services-label" class="inline-block text-purple-400 font-bold text-sm mb-3 tracking-wide">خدماتنا</span>
-                <h2 id="services-title" class="text-3xl md:text-5xl font-extrabold text-white mb-4">حلول إبداعية بلا حدود</h2>
-                <p id="services-subtitle" class="text-slate-400">نقدّم مجموعة متكاملة من الخدمات الرقمية والإبداعية لترفع براندك إلى المستوى التالي.</p>
+                <h2 id="services-title" class="text-3xl md:text-5xl font-extrabold site-title mb-4">حلول إبداعية بلا حدود</h2>
+                <p id="services-subtitle" class="site-muted">نقدّم مجموعة متكاملة من الخدمات الرقمية والإبداعية لترفع براندك إلى المستوى التالي.</p>
             </div>
 
             <div id="services-grid" class="grid sm:grid-cols-2 xl:grid-cols-4 gap-6"></div>
@@ -156,12 +176,12 @@
     </section>
 
     <!-- ═══════════════════ PROCESS ═══════════════════ -->
-    <section id="process" class="py-16 md:py-24 relative bg-slate-950/50 border-y border-white/5">
+    <section id="process" class="py-16 md:py-24 relative site-section-alt">
         <div class="container mx-auto px-5 sm:px-6">
             <div class="text-center max-w-2xl mx-auto mb-16">
                 <span id="process-label" class="inline-block text-cyan-400 font-bold text-sm mb-3 tracking-wide">آلية العمل</span>
-                <h2 id="process-title" class="text-3xl md:text-5xl font-extrabold text-white mb-4">رحلة صناعة الفارق</h2>
-                <p id="process-subtitle" class="text-slate-400">من الفكرة الأولى وحتى تحليل النتائج — عملية واضحة ومنظمة.</p>
+                <h2 id="process-title" class="text-3xl md:text-5xl font-extrabold site-title mb-4">رحلة صناعة الفارق</h2>
+                <p id="process-subtitle" class="site-muted">من الفكرة الأولى وحتى تحليل النتائج — عملية واضحة ومنظمة.</p>
             </div>
 
             <div class="relative">
@@ -176,18 +196,18 @@
         <div class="container mx-auto px-5 sm:px-6">
             <div class="text-center mb-12">
                 <span id="testimonials-label" class="inline-block text-purple-400 font-bold text-sm mb-3">آراء العملاء</span>
-                <h2 id="testimonials-title" class="text-3xl md:text-4xl font-extrabold text-white">ماذا يقول شركاؤنا؟</h2>
+                <h2 id="testimonials-title" class="text-3xl md:text-4xl font-extrabold site-title">ماذا يقول شركاؤنا؟</h2>
             </div>
 
             <div class="max-w-3xl mx-auto relative min-h-[220px]">
                 <div id="testimonial-track" class="relative"></div>
 
                 <div class="flex items-center justify-center gap-4 mt-8">
-                    <button id="prev-testimonial" aria-label="السابق" class="w-10 h-10 rounded-full glass flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition">
+                    <button id="prev-testimonial" aria-label="السابق" class="w-10 h-10 rounded-full glass flex items-center justify-center site-faint hover:text-cyan-400 transition">
                         <i class="fa-solid fa-chevron-right"></i>
                     </button>
                     <div id="testimonial-dots" class="flex gap-2"></div>
-                    <button id="next-testimonial" aria-label="التالي" class="w-10 h-10 rounded-full glass flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition">
+                    <button id="next-testimonial" aria-label="التالي" class="w-10 h-10 rounded-full glass flex items-center justify-center site-faint hover:text-cyan-400 transition">
                         <i class="fa-solid fa-chevron-left"></i>
                     </button>
                 </div>
@@ -196,19 +216,19 @@
     </section>
 
     <!-- ═══════════════════ PORTFOLIO ═══════════════════ -->
-    <section id="portfolio" class="py-16 md:py-24 relative bg-slate-950/50 border-y border-white/5">
+    <section id="portfolio" class="py-16 md:py-24 relative site-section-alt">
         <div class="container mx-auto px-5 sm:px-6">
             <div class="text-center max-w-2xl mx-auto mb-16">
                 <span id="portfolio-label" class="inline-block text-cyan-400 font-bold text-sm mb-3 tracking-wide">معرض الإبداع</span>
-                <h2 id="portfolio-title" class="text-3xl md:text-5xl font-extrabold text-white mb-4">بعض أعمالنا الأخيرة</h2>
-                <p id="portfolio-subtitle" class="text-slate-400">نماذج من مشاريع إنتاج الفيديو والتصميم الجرافيكي.</p>
+                <h2 id="portfolio-title" class="text-3xl md:text-5xl font-extrabold site-title mb-4">بعض أعمالنا الأخيرة</h2>
+                <p id="portfolio-subtitle" class="site-muted">نماذج من مشاريع إنتاج الفيديو والتصميم الجرافيكي.</p>
             </div>
 
             <!-- Filter Tabs -->
             <div class="flex flex-wrap justify-center gap-3 mb-10">
-                <button class="filter-btn active px-5 py-2 rounded-full text-sm font-semibold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 transition" data-filter="all">الكل</button>
-                <button class="filter-btn px-5 py-2 rounded-full text-sm font-semibold text-slate-400 border border-white/10 hover:border-cyan-500/30 hover:text-cyan-400 transition" data-filter="video">إنتاج فيديو</button>
-                <button class="filter-btn px-5 py-2 rounded-full text-sm font-semibold text-slate-400 border border-white/10 hover:border-purple-500/30 hover:text-purple-400 transition" data-filter="design">تصميم جرافيك</button>
+                <button class="filter-btn active" data-filter="all">الكل</button>
+                <button class="filter-btn" data-filter="video">إنتاج فيديو</button>
+                <button class="filter-btn" data-filter="design">تصميم جرافيك</button>
             </div>
 
             <div id="portfolio-grid" class="portfolio-grid"></div>
@@ -220,12 +240,12 @@
         <div class="container mx-auto px-5 sm:px-6">
             <div class="relative max-w-4xl mx-auto">
                 <div class="absolute -inset-1 bg-gradient-to-r from-cyan-500/30 via-purple-500/30 to-blue-500/30 rounded-3xl blur-xl opacity-60"></div>
-                <div class="relative glass rounded-3xl p-10 sm:p-14 text-center border border-white/10">
-                    <h2 id="contact-title" class="text-3xl md:text-5xl font-black text-white mb-5 leading-tight">
+                <div class="relative glass rounded-3xl p-10 sm:p-14 text-center site-border border">
+                    <h2 id="contact-title" class="text-3xl md:text-5xl font-black site-title mb-5 leading-tight">
                         جاهز لتمنح عملك<br>
                         <span class="bg-clip-text text-transparent bg-gradient-to-l from-cyan-400 to-purple-400">قوة "Zeus"؟</span>
                     </h2>
-                    <p id="contact-description" class="text-slate-400 text-base md:text-lg mb-10 max-w-xl mx-auto leading-relaxed">
+                    <p id="contact-description" class="site-muted text-base md:text-lg mb-10 max-w-xl mx-auto leading-relaxed">
                         تواصل معنا اليوم للحديث عن مشروعك القادم، ودعنا نصنع لك تأثيراً تسويقياً وبصرياً فريداً.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 justify-center">
@@ -233,7 +253,7 @@
                             <i class="fa-brands fa-whatsapp text-xl"></i>
                             تواصل عبر الواتساب
                         </a>
-                        <a id="contact-email" href="mailto:zeusadv98@gmail.com" class="px-8 py-4 glass border border-white/10 text-white font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-white/8 hover:-translate-y-0.5 transition-all">
+                        <a id="contact-email" href="mailto:zeusadv98@gmail.com" class="px-8 py-4 glass site-btn-ghost font-bold rounded-2xl flex items-center justify-center gap-2 hover:-translate-y-0.5 transition-all">
                             <i class="fa-solid fa-envelope text-cyan-400"></i>
                             مراسلة الوكالة
                         </a>
@@ -244,7 +264,7 @@
     </section>
 
     <!-- ═══════════════════ FOOTER ═══════════════════ -->
-    <footer class="pt-16 pb-8 bg-slate-950 border-t border-white/5">
+    <footer class="pt-16 pb-8 site-footer">
         <div class="container mx-auto px-5 sm:px-6">
             <div class="grid md:grid-cols-3 gap-10 mb-12">
                 <!-- Brand -->
@@ -254,22 +274,22 @@
                             <i class="fa-solid fa-bolt text-black text-sm"></i>
                         </div>
                         <div>
-                            <span class="text-lg font-black text-white">Zeus</span>
-                            <span class="text-[10px] text-slate-500 block -mt-0.5">Zeus Agency</span>
+                            <span class="text-lg font-black site-title">Zeus</span>
+                            <span class="text-[10px] site-faint block -mt-0.5">Zeus Agency</span>
                         </div>
                     </div>
-                    <p id="footer-description" class="text-slate-500 text-sm leading-relaxed mb-5">وكالة تسويق رقمي وإنتاج فيديو — نصنع التأثير الطاغي لعلامتك التجارية.</p>
+                    <p id="footer-description" class="site-faint text-sm leading-relaxed mb-5">وكالة تسويق رقمي وإنتاج فيديو — نصنع التأثير الطاغي لعلامتك التجارية.</p>
                     <div class="flex gap-3">
-                        <a id="social-facebook" href="https://www.facebook.com/share/18wStFecLb/" target="_blank" rel="noopener" aria-label="Facebook" class="w-10 h-10 rounded-xl glass flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition">
+                        <a id="social-facebook" href="https://www.facebook.com/share/18wStFecLb/" target="_blank" rel="noopener" aria-label="Facebook" class="w-10 h-10 rounded-xl glass flex items-center justify-center site-faint hover:text-cyan-400 transition">
                             <i class="fa-brands fa-facebook"></i>
                         </a>
-                        <a id="social-instagram" href="https://www.instagram.com/zeus_media_egypt?igsh=ejJ3M253Y3l3NzN0" target="_blank" rel="noopener" aria-label="Instagram" class="w-10 h-10 rounded-xl glass flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition">
+                        <a id="social-instagram" href="https://www.instagram.com/zeus_media_egypt?igsh=ejJ3M253Y3l3NzN0" target="_blank" rel="noopener" aria-label="Instagram" class="w-10 h-10 rounded-xl glass flex items-center justify-center site-faint hover:text-cyan-400 transition">
                             <i class="fa-brands fa-instagram"></i>
                         </a>
-                        <a id="social-whatsapp" href="https://wa.me/+201284500809" target="_blank" rel="noopener" aria-label="WhatsApp" class="w-10 h-10 rounded-xl glass flex items-center justify-center text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 transition">
+                        <a id="social-whatsapp" href="https://wa.me/+201284500809" target="_blank" rel="noopener" aria-label="WhatsApp" class="w-10 h-10 rounded-xl glass flex items-center justify-center site-faint hover:text-emerald-400 transition">
                             <i class="fa-brands fa-whatsapp"></i>
                         </a>
-                        <a id="social-tiktok" href="https://www.tiktok.com/@zeus.media.egypt?_r=1&_t=ZS-96YJXMy8GQ8" target="_blank" rel="noopener" aria-label="tiktok" class="w-10 h-10 rounded-xl glass flex items-center justify-center text-slate-400 hover:text-red-400 hover:border-red-500/30 transition">
+                        <a id="social-tiktok" href="https://www.tiktok.com/@zeus.media.egypt?_r=1&_t=ZS-96YJXMy8GQ8" target="_blank" rel="noopener" aria-label="tiktok" class="w-10 h-10 rounded-xl glass flex items-center justify-center site-faint hover:text-red-400 transition">
                             <i class="fa-brands fa-tiktok"></i>
                         </a>
                     </div>
@@ -277,22 +297,22 @@
 
                 <!-- Quick Links -->
                 <div>
-                    <h4 class="text-white font-bold mb-4">روابط سريعة</h4>
+                    <h4 class="site-title font-bold mb-4">روابط سريعة</h4>
                     <ul class="space-y-2.5 text-sm">
-                        <li><a href="#about" class="footer-link text-slate-500 hover:text-cyan-400 transition">من نحن</a></li>
-                        <li><a href="#services" class="footer-link text-slate-500 hover:text-cyan-400 transition">خدماتنا</a></li>
-                        <li><a href="#process" class="footer-link text-slate-500 hover:text-cyan-400 transition">آلية العمل</a></li>
-                        <li><a href="#portfolio" class="footer-link text-slate-500 hover:text-cyan-400 transition">أعمالنا</a></li>
-                        <li><a href="#contact" class="footer-link text-slate-500 hover:text-cyan-400 transition">تواصل معنا</a></li>
+                        <li><a href="#about" class="footer-link site-faint hover:text-cyan-400 transition">من نحن</a></li>
+                        <li><a href="#services" class="footer-link site-faint hover:text-cyan-400 transition">خدماتنا</a></li>
+                        <li><a href="#process" class="footer-link site-faint hover:text-cyan-400 transition">آلية العمل</a></li>
+                        <li><a href="#portfolio" class="footer-link site-faint hover:text-cyan-400 transition">أعمالنا</a></li>
+                        <li><a href="#contact" class="footer-link site-faint hover:text-cyan-400 transition">تواصل معنا</a></li>
                     </ul>
                 </div>
 
                 <!-- Newsletter -->
                 <div>
-                    <h4 class="text-white font-bold mb-4">ابقَ على اطلاع</h4>
-                    <p class="text-slate-500 text-sm mb-4">اشترك لتصلك آخر أعمالنا ونصائح التسويق الرقمي.</p>
+                    <h4 class="site-title font-bold mb-4">ابقَ على اطلاع</h4>
+                    <p class="site-faint text-sm mb-4">اشترك لتصلك آخر أعمالنا ونصائح التسويق الرقمي.</p>
                     <form id="newsletter-form" class="flex gap-2">
-                        <input type="email" required placeholder="بريدك الإلكتروني" class="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition">
+                        <input type="email" required placeholder="بريدك الإلكتروني" class="site-input flex-1 px-4 py-3 rounded-xl text-sm transition">
                         <button type="submit" class="px-5 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-bold rounded-xl hover:opacity-90 transition text-sm whitespace-nowrap">
                             <i class="fa-solid fa-paper-plane"></i>
                         </button>
@@ -301,10 +321,10 @@
                 </div>
             </div>
 
-            <div class="pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-slate-600">
+            <div class="pt-8 border-t site-divider flex flex-col sm:flex-row justify-between items-center gap-4 text-sm site-faint">
                 <p id="footer-copyright">&copy; 2026 Zeus Agency — زيوس. جميع الحقوق محفوظة.</p>
                 <p class="text-xs flex items-center gap-3">
-                    <a href="admin.html" class="text-slate-600 hover:text-cyan-400 transition" title="لوحة التحكم"><i class="fa-solid fa-lock"></i></a>
+                    <a href="admin.html" class="site-faint hover:text-cyan-400 transition" title="لوحة التحكم"><i class="fa-solid fa-lock"></i></a>
                     Developed by <a href="https://engahmedgad.vercel.app/" target="_blank" rel="noopener" class="text-cyan-400 hover:text-cyan-300 transition">Ahmed Gad</a>
                 </p>
             </div>

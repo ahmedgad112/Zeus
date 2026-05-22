@@ -38,7 +38,7 @@
             <div class="portfolio-card__media">${media}</div>
             <div class="portfolio-card__info">
                 <span class="text-xs font-bold ${item.tagClass} uppercase tracking-wide mb-1">${item.tag}</span>
-                <h4 class="text-base sm:text-lg font-bold text-white">${item.title}</h4>
+                <h4 class="text-base sm:text-lg font-bold site-title">${item.title}</h4>
             </div>
         </div>`;
     }
@@ -57,7 +57,7 @@
         const heroStats = document.getElementById('hero-stats');
         if (heroStats) {
             heroStats.innerHTML = data.hero.stats.map(s =>
-                `<div><p class="text-3xl font-black ${s.color}">${s.value}</p><p class="text-xs text-slate-500 mt-1">${s.label}</p></div>`
+                `<div><p class="text-3xl font-black ${s.color}">${s.value}</p><p class="text-xs site-faint mt-1">${s.label}</p></div>`
             ).join('');
         }
 
@@ -65,7 +65,7 @@
         setHtml('about-title', data.about.title + '<br><span class="bg-clip-text text-transparent bg-gradient-to-l from-cyan-400 to-purple-400">' + data.about.titleHighlight + '</span>');
         const aboutParas = document.getElementById('about-paragraphs');
         if (aboutParas) {
-            aboutParas.innerHTML = data.about.paragraphs.map(p => `<p class="text-slate-400 leading-relaxed mb-5">${p}</p>`).join('');
+            aboutParas.innerHTML = data.about.paragraphs.map(p => `<p class="site-muted leading-relaxed mb-5">${p}</p>`).join('');
         }
 
         const aboutQuotes = document.getElementById('about-quotes');
@@ -73,7 +73,7 @@
             aboutQuotes.innerHTML = data.about.quotes.map(q =>
                 `<div class="glass rounded-2xl p-5 border-r-4 ${q.border}">
                     <i class="fa-solid fa-quote-right ${q.iconColor} text-2xl mb-3 block"></i>
-                    <p class="text-sm text-slate-300 italic leading-relaxed">${q.text}</p>
+                    <p class="text-sm site-muted-soft italic leading-relaxed">${q.text}</p>
                 </div>`
             ).join('');
         }
@@ -81,10 +81,10 @@
         const aboutStats = document.getElementById('about-stats');
         if (aboutStats) {
             aboutStats.innerHTML = data.about.stats.map(s =>
-                `<div class="text-center p-6 rounded-2xl bg-white/5 border border-white/5 ${s.hover} transition-colors">
+                `<div class="text-center p-6 rounded-2xl site-stat-card ${s.hover} transition-colors">
                     <i class="fa-solid ${s.icon} ${s.iconColor} text-2xl mb-3"></i>
-                    <p class="text-3xl font-black text-white">${s.value}</p>
-                    <p class="text-xs text-slate-500 mt-1">${s.label}</p>
+                    <p class="text-3xl font-black site-title">${s.value}</p>
+                    <p class="text-xs site-faint mt-1">${s.label}</p>
                 </div>`
             ).join('');
         }
@@ -100,14 +100,14 @@
         if (servicesGrid) {
             servicesGrid.innerHTML = data.services.items.map(s => {
                 const iconBg = GLOW_ICON[s.glow] || GLOW_ICON.cyan;
-                return `<div class="service-card relative glass rounded-2xl p-7 border border-white/5 overflow-hidden cursor-default group" data-glow="${s.glow}">
+                return `<div class="service-card relative glass rounded-2xl p-7 site-border border overflow-hidden cursor-default group" data-glow="${s.glow}">
                     <div class="w-14 h-14 rounded-2xl ${iconBg} flex items-center justify-center text-2xl mb-6 group-hover:text-black group-hover:shadow-[0_0_30px_rgba(34,211,238,0.4)] transition-all duration-400">
                         <i class="fa-solid ${s.icon}"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-white mb-2">${s.title}</h3>
+                    <h3 class="text-lg font-bold site-title mb-2">${s.title}</h3>
                     <p class="text-xs ${s.accent}/70 font-medium mb-3 uppercase tracking-wide">${s.subtitle}</p>
-                    <p class="text-slate-400 text-sm leading-relaxed">${s.description}</p>
-                    <div class="mt-6 pt-4 border-t border-white/5 flex items-center ${s.accent} text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <p class="site-muted text-sm leading-relaxed">${s.description}</p>
+                    <div class="mt-6 pt-4 border-t site-divider flex items-center ${s.accent} text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <span>اكتشف المزيد</span>
                         <i class="fa-solid fa-arrow-left mr-2 text-xs"></i>
                     </div>
@@ -128,10 +128,10 @@
                     <div class="relative z-10 w-16 h-16 rounded-2xl glass ${c.border} flex items-center justify-center ${c.text} font-black text-xl mx-auto mb-5 ${c.shadow} group-hover:-translate-y-1 transition-all duration-300">
                         <span>${step.num}</span>
                     </div>
-                    <div class="glass rounded-2xl p-6 border border-white/5 ${c.hover} transition-colors">
+                    <div class="glass rounded-2xl p-6 site-border border ${c.hover} transition-colors">
                         <i class="fa-solid ${step.icon} ${c.text} text-xl mb-3"></i>
-                        <h4 class="text-base font-bold text-white mb-2">${step.title}</h4>
-                        <p class="text-slate-400 text-xs leading-relaxed">${step.text}</p>
+                        <h4 class="text-base font-bold site-title mb-2">${step.title}</h4>
+                        <p class="site-muted text-xs leading-relaxed">${step.text}</p>
                     </div>
                 </div>`;
             }).join('');
@@ -144,14 +144,14 @@
         const dotsWrap = document.getElementById('testimonial-dots');
         if (track) {
             track.innerHTML = data.testimonials.items.map((t, i) =>
-                `<div class="testimonial-slide ${i === 0 ? 'active-slide' : 'hidden-slide'} glass rounded-3xl p-8 sm:p-10 border border-white/10 text-center">
+                `<div class="testimonial-slide ${i === 0 ? 'active-slide' : 'hidden-slide'} glass rounded-3xl p-8 sm:p-10 site-border border text-center">
                     <div class="flex justify-center mb-4">${'<i class="fa-solid fa-star text-amber-400 text-sm"></i>'.repeat(5)}</div>
-                    <p class="text-lg text-slate-300 leading-relaxed mb-6 italic">${t.text}</p>
+                    <p class="text-lg site-muted-soft leading-relaxed mb-6 italic">${t.text}</p>
                     <div class="flex items-center justify-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-gradient-to-br ${t.gradient} flex items-center justify-center text-black font-bold text-sm">${t.initial}</div>
                         <div class="text-right">
-                            <p class="font-bold text-white text-sm">${t.name}</p>
-                            <p class="text-xs text-slate-500">${t.role}</p>
+                            <p class="font-bold site-title text-sm">${t.name}</p>
+                            <p class="text-xs site-faint">${t.role}</p>
                         </div>
                     </div>
                 </div>`
@@ -159,7 +159,7 @@
         }
         if (dotsWrap) {
             dotsWrap.innerHTML = data.testimonials.items.map((_, i) =>
-                `<button class="dot ${i === 0 ? 'w-6 bg-cyan-400' : 'w-2.5 bg-white/20'} h-2.5 rounded-full transition-all" data-index="${i}" aria-label="${i + 1}"></button>`
+                `<button class="dot ${i === 0 ? 'is-active' : ''}" data-index="${i}" aria-label="${i + 1}"></button>`
             ).join('');
         }
         if (typeof window.reinitTestimonials === 'function') window.reinitTestimonials();

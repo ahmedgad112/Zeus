@@ -1,3 +1,42 @@
+/* ── Theme ── */
+const THEME_KEY = 'zeus_theme';
+
+function getTheme() {
+    return document.documentElement.getAttribute('data-theme') || 'light';
+}
+
+function updateThemeIcons(theme) {
+    const isLight = theme === 'light';
+    const icon = isLight ? 'fa-moon' : 'fa-sun';
+    document.querySelectorAll('#theme-toggle i').forEach(el => {
+        el.className = 'fa-solid ' + icon;
+    });
+    const mobileIcon = document.querySelector('#theme-toggle-mobile i');
+    if (mobileIcon) mobileIcon.className = 'fa-solid ' + icon + ' ml-2';
+    const label = document.getElementById('theme-toggle-label');
+    if (label) label.textContent = isLight ? 'الوضع الداكن' : 'الوضع الفاتح';
+}
+
+function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    try {
+        localStorage.setItem(THEME_KEY, theme);
+        localStorage.setItem('zeus_admin_theme', theme);
+    } catch { /* ignore */ }
+    updateThemeIcons(theme);
+}
+
+function toggleTheme() {
+    setTheme(getTheme() === 'light' ? 'dark' : 'light');
+}
+
+document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
+document.getElementById('theme-toggle-mobile')?.addEventListener('click', () => {
+    toggleTheme();
+    setMenuOpen(false);
+});
+updateThemeIcons(getTheme());
+
 /* ── Mobile Menu ── */
 const menuBtn = document.getElementById('menu-btn');
 const mobileMenu = document.getElementById('mobile-menu');
@@ -98,10 +137,7 @@ function initTestimonials() {
             slide.classList.toggle('hidden-slide', i !== index);
         });
         dots.forEach((dot, i) => {
-            dot.classList.toggle('bg-cyan-400', i === index);
-            dot.classList.toggle('bg-white/20', i !== index);
-            dot.classList.toggle('w-6', i === index);
-            dot.classList.toggle('w-2.5', i !== index);
+            dot.classList.toggle('is-active', i === index);
         });
         currentSlide = index;
     }
@@ -185,12 +221,8 @@ function initPortfolio() {
 
     filterBtns.forEach(btn => {
         btn.onclick = () => {
-            filterBtns.forEach(b => {
-                b.classList.remove('active', 'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/30');
-                b.classList.add('text-slate-400', 'border-white/10');
-            });
-            btn.classList.add('active', 'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/30');
-            btn.classList.remove('text-slate-400', 'border-white/10');
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
 
             const filter = btn.dataset.filter;
             document.querySelectorAll('.portfolio-card').forEach(item => {
