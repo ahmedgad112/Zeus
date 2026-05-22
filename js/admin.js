@@ -546,11 +546,28 @@
                 document.getElementById('login-error').classList.add('hidden');
                 showApp();
             } else {
-                document.getElementById('login-error').classList.remove('hidden');
+                const err = document.getElementById('login-error');
+                err.textContent = 'بيانات الدخول غير صحيحة — جرّب admin / zeus2026';
+                err.classList.remove('hidden');
             }
-        } catch {
-            document.getElementById('login-error').classList.remove('hidden');
+        } catch (err) {
+            const el = document.getElementById('login-error');
+            el.textContent = err.message || 'حدث خطأ أثناء الدخول';
+            el.classList.remove('hidden');
         }
+    });
+
+    document.getElementById('btn-reset-login')?.addEventListener('click', () => {
+        if (!confirm('إعادة بيانات الدخول للافتراضي؟\nadmin / zeus2026')) return;
+        ContentStore.resetUsersToDefaults();
+        ContentStore.logout();
+        document.getElementById('login-password').value = '';
+        document.getElementById('login-username').value = 'admin';
+        const err = document.getElementById('login-error');
+        err.textContent = 'تمت الإعادة — سجّل الدخول بـ admin / zeus2026';
+        err.classList.remove('hidden');
+        err.classList.remove('text-red-400');
+        err.classList.add('text-emerald-400');
     });
 
     if (ContentStore.isLoggedIn()) showApp();

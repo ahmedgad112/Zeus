@@ -161,26 +161,47 @@ function migrateLegacyAdminPassword() {
         if (!raw) return null;
         const data = JSON.parse(raw);
         if (data.admin && data.admin.password) {
-            return { password: data.admin.password };
+            return String(data.admin.password);
         }
     } catch { /* ignore */ }
     return null;
+}
+
+function normalizeUsers(stored) {
+    if (!Array.isArray(stored) || !stored.length) return null;
+    const defaultsByName = Object.fromEntries(DEFAULT_USERS.map(u => [u.username, u]));
+    const normalized = stored.map(u => {
+        const name = sanitizeUsername(u.username);
+        const def = defaultsByName[name];
+        const merged = {
+            ...(def || {}),
+            ...u,
+            username: name || u.username,
+        };
+        if (!merged.passwordHash && def) merged.passwordHash = def.passwordHash;
+        return merged;
+    });
+    const ok = normalized.every(u => u.username && u.passwordHash && u.role);
+    return ok ? normalized : null;
 }
 
 const UserStore = {
     getAll() {
         try {
             const raw = localStorage.getItem(ZEUS_USERS_KEY);
-            if (raw) return JSON.parse(raw);
+            if (raw) {
+                const valid = normalizeUsers(JSON.parse(raw));
+                if (valid) return valid;
+            }
         } catch { /* ignore */ }
-        const legacy = migrateLegacyAdminPassword();
         const users = deepClone(DEFAULT_USERS);
-        if (legacy) {
-            users[0].passwordHash = null;
-            users[0]._legacyPassword = legacy.password;
-        }
         this.saveAll(users);
         return users;
+    },
+
+    resetToDefaults() {
+        localStorage.removeItem(ZEUS_USERS_KEY);
+        return this.getAll();
     },
 
     saveAll(users) {
@@ -188,17 +209,7 @@ const UserStore = {
     },
 
     async ensureHashes() {
-        const users = this.getAll();
-        let changed = false;
-        for (const u of users) {
-            if (u._legacyPassword) {
-                u.passwordHash = await hashPassword(u._legacyPassword);
-                delete u._legacyPassword;
-                changed = true;
-            }
-        }
-        if (changed) this.saveAll(users);
-        return users;
+        return this.getAll();
     },
 
     getSession() {
@@ -233,10 +244,27 @@ const UserStore = {
     },
 
     async login(username, password) {
-        const users = await this.ensureHashes();
+        if (!password) return null;
+        if (!crypto.subtle) {
+            throw new Error('المتصفح لا يدعم تسجيل الدخول — افتح الموقع عبر HTTPS');
+        }
+        const users = this.getAll();
         const name = sanitizeUsername(username);
         const hash = await hashPassword(password);
-        const user = users.find(u => u.username === name && u.passwordHash === hash);
+        let user = users.find(u => u.username === name && u.passwordHash === hash);
+
+        if (!user && name === 'admin') {
+            const legacyPass = migrateLegacyAdminPassword();
+            if (legacyPass && password === legacyPass) {
+                const admin = users.find(u => u.username === 'admin');
+                if (admin) {
+                    admin.passwordHash = hash;
+                    this.saveAll(users);
+                    user = admin;
+                }
+            }
+        }
+
         if (!user) return null;
         this.setSession(user);
         return this.getSession();
@@ -373,4 +401,5 @@ const ContentStore = {
     deleteUser: (id) => UserStore.deleteUser(id),
     changePassword: (current, newPass) => UserStore.changePassword(current, newPass),
     resetUserPassword: (id, newPass) => UserStore.resetUserPassword(id, newPass),
+    resetUsersToDefaults: () => UserStore.resetToDefaults(),
 };
