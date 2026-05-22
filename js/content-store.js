@@ -2,7 +2,8 @@
  * Zeus Agency — محتوى الموقع (localStorage)
  */
 const ZEUS_STORAGE_KEY = 'zeus_site_content_v1';
-const ZEUS_AUTH_KEY = 'zeus_admin_session';
+const ZEUS_USERS_KEY = 'zeus_admin_users_v1';
+const ZEUS_USER_SESSION_KEY = 'zeus_admin_user';
 
 const TAG_COLORS = [
     { value: 'text-cyan-400', label: 'سماوي' },
@@ -119,14 +120,194 @@ const DEFAULT_CONTENT = {
             tiktok: 'https://www.tiktok.com/@zeus.media.egypt?_r=1&_t=ZS-96YJXMy8GQ8',
         },
     },
-    admin: {
-        password: 'zeus2026',
-    },
 };
 
 function deepClone(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
+
+const ROLE_LABELS = { admin: 'مدير', editor: 'محرر' };
+
+const DEFAULT_USERS = [
+    {
+        id: 'u_admin',
+        username: 'admin',
+        displayName: 'مدير النظام',
+        role: 'admin',
+        passwordHash: 'c1f7cffdb382596624b5bff6535756152b8618d0c80fc72a0a09622ae2bef8b9',
+    },
+    {
+        id: 'u_editor',
+        username: 'editor',
+        displayName: 'محرر المحتوى',
+        role: 'editor',
+        passwordHash: 'a4ecfe3da82ef2de2dd96fd9c74c08d0c8805ebb2d88d93660b498b9952a3769',
+    },
+];
+
+async function hashPassword(password) {
+    const data = new TextEncoder().encode('zeus_v1:' + password);
+    const buf = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function sanitizeUsername(username) {
+    return String(username || '').trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+}
+
+function migrateLegacyAdminPassword() {
+    try {
+        const raw = localStorage.getItem(ZEUS_STORAGE_KEY);
+        if (!raw) return null;
+        const data = JSON.parse(raw);
+        if (data.admin && data.admin.password) {
+            return { password: data.admin.password };
+        }
+    } catch { /* ignore */ }
+    return null;
+}
+
+const UserStore = {
+    getAll() {
+        try {
+            const raw = localStorage.getItem(ZEUS_USERS_KEY);
+            if (raw) return JSON.parse(raw);
+        } catch { /* ignore */ }
+        const legacy = migrateLegacyAdminPassword();
+        const users = deepClone(DEFAULT_USERS);
+        if (legacy) {
+            users[0].passwordHash = null;
+            users[0]._legacyPassword = legacy.password;
+        }
+        this.saveAll(users);
+        return users;
+    },
+
+    saveAll(users) {
+        localStorage.setItem(ZEUS_USERS_KEY, JSON.stringify(users));
+    },
+
+    async ensureHashes() {
+        const users = this.getAll();
+        let changed = false;
+        for (const u of users) {
+            if (u._legacyPassword) {
+                u.passwordHash = await hashPassword(u._legacyPassword);
+                delete u._legacyPassword;
+                changed = true;
+            }
+        }
+        if (changed) this.saveAll(users);
+        return users;
+    },
+
+    getSession() {
+        try {
+            const raw = sessionStorage.getItem(ZEUS_USER_SESSION_KEY);
+            return raw ? JSON.parse(raw) : null;
+        } catch {
+            return null;
+        }
+    },
+
+    setSession(user) {
+        if (user) {
+            sessionStorage.setItem(ZEUS_USER_SESSION_KEY, JSON.stringify({
+                id: user.id,
+                username: user.username,
+                displayName: user.displayName,
+                role: user.role,
+            }));
+        } else {
+            sessionStorage.removeItem(ZEUS_USER_SESSION_KEY);
+        }
+    },
+
+    isLoggedIn() {
+        return !!this.getSession();
+    },
+
+    isAdmin() {
+        const u = this.getSession();
+        return u && u.role === 'admin';
+    },
+
+    async login(username, password) {
+        const users = await this.ensureHashes();
+        const name = sanitizeUsername(username);
+        const hash = await hashPassword(password);
+        const user = users.find(u => u.username === name && u.passwordHash === hash);
+        if (!user) return null;
+        this.setSession(user);
+        return this.getSession();
+    },
+
+    logout() {
+        this.setSession(null);
+    },
+
+    listPublic() {
+        return this.getAll().map(({ passwordHash, _legacyPassword, ...u }) => u);
+    },
+
+    async createUser({ username, displayName, password, role }) {
+        if (!UserStore.isAdmin()) throw new Error('ليس لديك صلاحية');
+        const name = sanitizeUsername(username);
+        if (name.length < 3) throw new Error('اسم المستخدم قصير');
+        if (!password || password.length < 4) throw new Error('كلمة المرور قصيرة');
+        if (!['admin', 'editor'].includes(role)) throw new Error('دور غير صالح');
+        const users = this.getAll();
+        if (users.some(u => u.username === name)) throw new Error('اسم المستخدم موجود');
+        const user = {
+            id: 'u_' + Date.now().toString(36),
+            username: name,
+            displayName: (displayName || name).trim(),
+            role,
+            passwordHash: await hashPassword(password),
+        };
+        users.push(user);
+        this.saveAll(users);
+        const { passwordHash, ...pub } = user;
+        return pub;
+    },
+
+    deleteUser(id) {
+        if (!UserStore.isAdmin()) throw new Error('ليس لديك صلاحية');
+        const me = this.getSession();
+        if (me && me.id === id) throw new Error('لا يمكن حذف حسابك');
+        const users = this.getAll();
+        const target = users.find(u => u.id === id);
+        if (!target) throw new Error('المستخدم غير موجود');
+        const admins = users.filter(u => u.role === 'admin');
+        if (target.role === 'admin' && admins.length <= 1) {
+            throw new Error('يجب أن يبقى مدير واحد على الأقل');
+        }
+        this.saveAll(users.filter(u => u.id !== id));
+    },
+
+    async changePassword(currentPassword, newPassword) {
+        const me = this.getSession();
+        if (!me) throw new Error('غير مسجل');
+        if (!newPassword || newPassword.length < 4) throw new Error('كلمة المرور الجديدة قصيرة');
+        const users = await this.ensureHashes();
+        const idx = users.findIndex(u => u.id === me.id);
+        if (idx < 0) throw new Error('المستخدم غير موجود');
+        const hash = await hashPassword(currentPassword);
+        if (users[idx].passwordHash !== hash) throw new Error('كلمة المرور الحالية غير صحيحة');
+        users[idx].passwordHash = await hashPassword(newPassword);
+        this.saveAll(users);
+    },
+
+    async resetUserPassword(id, newPassword) {
+        if (!UserStore.isAdmin()) throw new Error('ليس لديك صلاحية');
+        if (!newPassword || newPassword.length < 4) throw new Error('كلمة المرور قصيرة');
+        const users = this.getAll();
+        const idx = users.findIndex(u => u.id === id);
+        if (idx < 0) throw new Error('المستخدم غير موجود');
+        users[idx].passwordHash = await hashPassword(newPassword);
+        this.saveAll(users);
+    },
+};
 
 function mergeDefaults(stored) {
     const base = deepClone(DEFAULT_CONTENT);
@@ -142,7 +323,6 @@ function mergeDefaults(stored) {
         portfolio: { ...base.portfolio, ...stored.portfolio },
         contact: { ...base.contact, ...stored.contact },
         footer: { ...base.footer, ...stored.footer },
-        admin: { ...base.admin, ...stored.admin },
         meta: { ...base.meta, ...stored.meta },
     };
 }
@@ -159,11 +339,14 @@ const ContentStore = {
     },
 
     save(data) {
-        localStorage.setItem(ZEUS_STORAGE_KEY, JSON.stringify(data));
+        const clean = { ...data };
+        delete clean.admin;
+        localStorage.setItem(ZEUS_STORAGE_KEY, JSON.stringify(clean));
         window.dispatchEvent(new CustomEvent('zeus-content-updated'));
     },
 
     reset() {
+        if (!UserStore.isAdmin()) throw new Error('ليس لديك صلاحية');
         localStorage.removeItem(ZEUS_STORAGE_KEY);
         window.dispatchEvent(new CustomEvent('zeus-content-updated'));
         return deepClone(DEFAULT_CONTENT);
@@ -180,28 +363,14 @@ const ContentStore = {
         return merged;
     },
 
-    isLoggedIn() {
-        return sessionStorage.getItem(ZEUS_AUTH_KEY) === '1';
-    },
-
-    login(password) {
-        const data = this.get();
-        if (password === data.admin.password) {
-            sessionStorage.setItem(ZEUS_AUTH_KEY, '1');
-            return true;
-        }
-        return false;
-    },
-
-    logout() {
-        sessionStorage.removeItem(ZEUS_AUTH_KEY);
-    },
-
-    changePassword(newPass) {
-        const data = this.get();
-        data.admin.password = newPass;
-        this.save(data);
-    },
+    isLoggedIn: () => UserStore.isLoggedIn(),
+    isAdmin: () => UserStore.isAdmin(),
+    getUser: () => UserStore.getSession(),
+    login: (username, password) => UserStore.login(username, password),
+    logout: () => UserStore.logout(),
+    listUsers: () => UserStore.listPublic(),
+    createUser: (data) => UserStore.createUser(data),
+    deleteUser: (id) => UserStore.deleteUser(id),
+    changePassword: (current, newPass) => UserStore.changePassword(current, newPass),
+    resetUserPassword: (id, newPass) => UserStore.resetUserPassword(id, newPass),
 };
-
-if (typeof module !== 'undefined') module.exports = { ContentStore, DEFAULT_CONTENT, TAG_COLORS, uid };

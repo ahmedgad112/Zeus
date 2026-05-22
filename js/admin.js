@@ -13,8 +13,11 @@
         process: 'آلية العمل',
         testimonials: 'آراء العملاء',
         contact: 'التواصل والفوتر',
+        users: 'المستخدمين',
         settings: 'الإعدادات',
     };
+
+    const ROLE_LABELS = { admin: 'مدير', editor: 'محرر' };
 
     const loginScreen = document.getElementById('login-screen');
     const dashboard = document.getElementById('dashboard');
@@ -26,10 +29,71 @@
         setTimeout(() => toast.classList.remove('show'), 2800);
     }
 
+    function applyRoleUI() {
+        const isAdmin = ContentStore.isAdmin();
+        document.querySelectorAll('.admin-only').forEach(el => {
+            el.classList.toggle('hidden', !isAdmin);
+        });
+        const badge = document.getElementById('current-user-badge');
+        const u = ContentStore.getUser();
+        if (badge && u) {
+            badge.classList.remove('hidden');
+            badge.textContent = `${u.displayName || u.username} · ${ROLE_LABELS[u.role] || u.role}`;
+        }
+    }
+
     function showApp() {
         loginScreen.classList.add('hidden');
         dashboard.classList.remove('hidden');
+        applyRoleUI();
         renderAll();
+        if (ContentStore.isAdmin()) renderUsers();
+    }
+
+    function renderUsers() {
+        const list = document.getElementById('users-list');
+        if (!list || !ContentStore.isAdmin()) return;
+        const users = ContentStore.listUsers();
+        const me = ContentStore.getUser();
+        list.innerHTML = users.map(u => {
+            const isSelf = me && u.id === me.id;
+            return `<div class="portfolio-admin-item">
+                <div class="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold">${(u.displayName || u.username).charAt(0)}</div>
+                <div class="min-w-0">
+                    <p class="font-bold text-white">${u.displayName || u.username}</p>
+                    <p class="text-xs text-slate-500">@${u.username} · ${ROLE_LABELS[u.role]}</p>
+                </div>
+                <div class="flex gap-2 flex-shrink-0">
+                    <button type="button" class="admin-btn admin-btn--ghost text-xs user-reset-pw" data-id="${u.id}"><i class="fa-solid fa-key"></i></button>
+                    ${isSelf ? '' : `<button type="button" class="admin-btn admin-btn--danger text-xs user-del" data-id="${u.id}"><i class="fa-solid fa-trash"></i></button>`}
+                </div>
+            </div>`;
+        }).join('');
+
+        list.querySelectorAll('.user-del').forEach(btn => {
+            btn.onclick = () => {
+                if (!confirm('حذف هذا المستخدم؟')) return;
+                try {
+                    ContentStore.deleteUser(btn.dataset.id);
+                    renderUsers();
+                    showToast('تم الحذف');
+                } catch (err) {
+                    alert(err.message);
+                }
+            };
+        });
+        list.querySelectorAll('.user-reset-pw').forEach(btn => {
+            btn.onclick = async () => {
+                const pw = prompt('كلمة المرور الجديدة:');
+                if (!pw) return;
+                try {
+                    await ContentStore.resetUserPassword(btn.dataset.id, pw);
+                    showToast('تم تغيير كلمة المرور');
+                } catch (err) {
+                    alert(err.message);
+                }
+            };
+        });
     }
 
     function field(label, id, value, type = 'text', rows) {
@@ -463,6 +527,7 @@
             document.getElementById('panel-' + panel).classList.add('is-active');
             document.getElementById('panel-title').textContent = PANEL_TITLES[panel];
             document.getElementById('admin-sidebar').classList.remove('is-open');
+            if (panel === 'users') renderUsers();
         });
     });
 
@@ -471,18 +536,42 @@
     });
 
     /* ── Login ── */
-    document.getElementById('login-form').addEventListener('submit', (e) => {
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const username = document.getElementById('login-username').value;
         const pass = document.getElementById('login-password').value;
-        if (ContentStore.login(pass)) {
-            document.getElementById('login-error').classList.add('hidden');
-            showApp();
-        } else {
+        try {
+            const user = await ContentStore.login(username, pass);
+            if (user) {
+                document.getElementById('login-error').classList.add('hidden');
+                showApp();
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        } catch {
             document.getElementById('login-error').classList.remove('hidden');
         }
     });
 
     if (ContentStore.isLoggedIn()) showApp();
+
+    document.getElementById('btn-add-user')?.addEventListener('click', async () => {
+        try {
+            await ContentStore.createUser({
+                username: read('new-user-username'),
+                displayName: read('new-user-display'),
+                password: document.getElementById('new-user-password').value,
+                role: document.getElementById('new-user-role').value,
+            });
+            document.getElementById('new-user-username').value = '';
+            document.getElementById('new-user-display').value = '';
+            document.getElementById('new-user-password').value = '';
+            renderUsers();
+            showToast('تم إضافة المستخدم');
+        } catch (err) {
+            alert(err.message);
+        }
+    });
 
     document.getElementById('btn-logout').addEventListener('click', () => {
         ContentStore.logout();
@@ -559,12 +648,18 @@
         renderTestimonials();
     });
 
-    document.getElementById('btn-change-password').addEventListener('click', () => {
+    document.getElementById('btn-change-password').addEventListener('click', async () => {
+        const current = document.getElementById('current-password').value;
         const p = document.getElementById('new-password').value;
-        if (p.length < 4) { alert('كلمة المرور قصيرة'); return; }
-        ContentStore.changePassword(p);
-        document.getElementById('new-password').value = '';
-        showToast('تم تغيير كلمة المرور');
+        if (p.length < 4) { alert('كلمة المرور الجديدة قصيرة'); return; }
+        try {
+            await ContentStore.changePassword(current, p);
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-password').value = '';
+            showToast('تم تغيير كلمة المرور');
+        } catch (err) {
+            alert(err.message);
+        }
     });
 
     document.getElementById('btn-export').addEventListener('click', () => {
@@ -594,10 +689,15 @@
     });
 
     document.getElementById('btn-reset').addEventListener('click', () => {
+        if (!ContentStore.isAdmin()) { alert('ليس لديك صلاحية'); return; }
         if (!confirm('استعادة كل المحتوى للإعدادات الافتراضية؟')) return;
-        state = ContentStore.reset();
-        renderAll();
-        showToast('تمت الاستعادة');
+        try {
+            state = ContentStore.reset();
+            renderAll();
+            showToast('تمت الاستعادة');
+        } catch (err) {
+            alert(err.message);
+        }
     });
 
     fillTagColors();

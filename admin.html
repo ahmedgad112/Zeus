@@ -21,12 +21,14 @@
                     <i class="fa-solid fa-bolt text-black text-xl"></i>
                 </div>
                 <h1 class="text-2xl font-black text-white">لوحة تحكم زيوس</h1>
-                <p class="text-slate-500 text-sm mt-2">أدخل كلمة المرور للوصول</p>
+                <p class="text-slate-500 text-sm mt-2">أدخل اسم المستخدم وكلمة المرور</p>
             </div>
             <form id="login-form">
+                <label class="admin-label" for="login-username">اسم المستخدم</label>
+                <input type="text" id="login-username" class="admin-input mb-3" required autocomplete="username" placeholder="admin" value="admin">
                 <label class="admin-label" for="login-password">كلمة المرور</label>
-                <input type="password" id="login-password" class="admin-input mb-4" required autocomplete="current-password" placeholder="كلمة المرور الافتراضية: zeus2026">
-                <p id="login-error" class="text-red-400 text-sm mb-3 hidden">كلمة المرور غير صحيحة</p>
+                <input type="password" id="login-password" class="admin-input mb-4" required autocomplete="current-password">
+                <p id="login-error" class="text-red-400 text-sm mb-3 hidden">بيانات الدخول غير صحيحة</p>
                 <button type="submit" class="admin-btn admin-btn--primary w-full py-3">
                     <i class="fa-solid fa-right-to-bracket"></i>
                     دخول
@@ -61,8 +63,10 @@
                 <button type="button" class="admin-nav-btn" data-panel="process"><i class="fa-solid fa-route w-5"></i> آلية العمل</button>
                 <button type="button" class="admin-nav-btn" data-panel="testimonials"><i class="fa-solid fa-quote-right w-5"></i> آراء العملاء</button>
                 <button type="button" class="admin-nav-btn" data-panel="contact"><i class="fa-solid fa-envelope w-5"></i> التواصل والفوتر</button>
+                <button type="button" class="admin-nav-btn admin-only hidden" data-panel="users"><i class="fa-solid fa-user-shield w-5"></i> المستخدمين</button>
                 <button type="button" class="admin-nav-btn" data-panel="settings"><i class="fa-solid fa-gear w-5"></i> الإعدادات</button>
             </nav>
+            <p id="current-user-badge" class="text-xs text-slate-500 px-2 mb-2 hidden"></p>
 
             <div class="mt-auto pt-6 border-t border-white/10 space-y-2">
                 <a href="index.html" target="_blank" class="admin-btn admin-btn--ghost w-full text-sm">
@@ -133,12 +137,46 @@
                 <div id="form-contact" class="space-y-4"></div>
             </section>
 
+            <!-- Users -->
+            <section id="panel-users" class="admin-panel">
+                <div class="admin-card mb-6">
+                    <h3 class="font-bold text-white mb-4">إضافة مستخدم</h3>
+                    <div class="admin-grid-2 mb-3">
+                        <div>
+                            <label class="admin-label">اسم المستخدم</label>
+                            <input type="text" id="new-user-username" class="admin-input" placeholder="ahmed">
+                        </div>
+                        <div>
+                            <label class="admin-label">الاسم المعروض</label>
+                            <input type="text" id="new-user-display" class="admin-input" placeholder="أحمد">
+                        </div>
+                    </div>
+                    <div class="admin-grid-2 mb-3">
+                        <div>
+                            <label class="admin-label">كلمة المرور</label>
+                            <input type="password" id="new-user-password" class="admin-input">
+                        </div>
+                        <div>
+                            <label class="admin-label">الدور</label>
+                            <select id="new-user-role" class="admin-select">
+                                <option value="editor">محرر — تعديل المحتوى</option>
+                                <option value="admin">مدير — صلاحيات كاملة</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" id="btn-add-user" class="admin-btn admin-btn--primary"><i class="fa-solid fa-user-plus"></i> إضافة</button>
+                </div>
+                <div id="users-list"></div>
+            </section>
+
             <!-- Settings -->
             <section id="panel-settings" class="admin-panel">
                 <div class="admin-card">
-                    <h3 class="font-bold text-white mb-4">كلمة المرور</h3>
+                    <h3 class="font-bold text-white mb-4">كلمة مروري</h3>
+                    <label class="admin-label">كلمة المرور الحالية</label>
+                    <input type="password" id="current-password" class="admin-input mb-3" autocomplete="current-password">
                     <label class="admin-label">كلمة مرور جديدة</label>
-                    <input type="password" id="new-password" class="admin-input mb-3">
+                    <input type="password" id="new-password" class="admin-input mb-3" autocomplete="new-password">
                     <button type="button" id="btn-change-password" class="admin-btn admin-btn--primary">تغيير كلمة المرور</button>
                 </div>
                 <div class="admin-card">
@@ -149,7 +187,7 @@
                             <i class="fa-solid fa-upload"></i> استيراد JSON
                             <input type="file" id="import-file" accept=".json" class="hidden">
                         </label>
-                        <button type="button" id="btn-reset" class="admin-btn admin-btn--danger"><i class="fa-solid fa-rotate-left"></i> استعادة الافتراضي</button>
+                        <button type="button" id="btn-reset" class="admin-btn admin-btn--danger admin-only hidden"><i class="fa-solid fa-rotate-left"></i> استعادة الافتراضي</button>
                     </div>
                 </div>
                 <div class="admin-card">
